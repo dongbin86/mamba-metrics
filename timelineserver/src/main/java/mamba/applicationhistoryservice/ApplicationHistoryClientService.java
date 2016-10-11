@@ -30,8 +30,7 @@ import java.util.ArrayList;
 public class ApplicationHistoryClientService extends AbstractService implements
         ApplicationHistoryProtocol {
 
-    private static final Log LOG = LogFactory
-            .getLog(ApplicationHistoryClientService.class);
+    private static final Log LOG = LogFactory.getLog(ApplicationHistoryClientService.class);
     private ApplicationHistoryManager history;
     private Server server;
     private InetSocketAddress bindAddress;

@@ -34,14 +34,18 @@ import static mamba.applicationhistoryservice.metrics.timeline.TimelineMetricCon
 public class ApplicationHistoryServer extends CompositeService {
 
     public static final int SHUTDOWN_HOOK_PRIORITY = 30;
-    private static final Log LOG =
-            LogFactory.getLog(ApplicationHistoryServer.class);
+    private static final Log LOG = LogFactory.getLog(ApplicationHistoryServer.class);
 
     ApplicationHistoryClientService ahsClientService;
+
     ApplicationHistoryManager historyManager;
+
     TimelineStore timelineStore;
+
     TimelineMetricStore timelineMetricStore;
+
     private WebApp webApp;
+
     private TimelineMetricConfiguration metricConfiguration;
 
     public ApplicationHistoryServer() {
