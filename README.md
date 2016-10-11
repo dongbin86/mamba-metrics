@@ -1,3 +1,5 @@
 # mamba-metrics
 基于ambari-metrics
-add readme
+
+write metrics to "http://{serverhost}/ws/v1/timeline/metrics"
+
