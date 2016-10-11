@@ -55,8 +55,8 @@ public class MetricsLoadSimulator {
         mapProps.put("metricsHostName", "localhost");
         mapProps.put("collectInterval", "10000");
         mapProps.put("sendInterval", "60000");
-
-        if (args.length == 0) {
+        mapProps.put("master", "true");
+        /*if (args.length == 0) {
             printUsage();
             throw new RuntimeException("Unexpected argument, See usage message.");
         } else {
@@ -84,7 +84,7 @@ public class MetricsLoadSimulator {
                 }
             }
         }
-
+*/
         LOG.info("Recognized options: baseHostName={} hosts#={} trafficMode={} " +
                         "metricsHostName={} collectIntervalMillis={} sendIntervalMillis={} " +
                         "simulateMaster={}",
