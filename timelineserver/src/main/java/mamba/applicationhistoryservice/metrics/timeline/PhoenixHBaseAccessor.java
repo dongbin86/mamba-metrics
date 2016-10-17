@@ -105,7 +105,7 @@ public class PhoenixHBaseAccessor {
         this.cacheEnabled = Boolean.valueOf(metricsConf.get(TIMELINE_METRICS_CACHE_ENABLED, "true"));
         this.cacheSize = Integer.valueOf(metricsConf.get(TIMELINE_METRICS_CACHE_SIZE, "150"));
         this.cacheCommitInterval = Integer.valueOf(metricsConf.get(TIMELINE_METRICS_CACHE_COMMIT_INTERVAL, "3"));
-        this.insertCache = new ArrayBlockingQueue<TimelineMetrics>(cacheSize);
+        this.insertCache = new ArrayBlockingQueue<TimelineMetrics>(cacheSize);/**线程安全的容器*/
         this.skipBlockCacheForAggregatorsEnabled = metricsConf.getBoolean(AGGREGATORS_SKIP_BLOCK_CACHE, false);
         this.timelineMetricsTablesDurability = metricsConf.get(TIMELINE_METRICS_AGGREGATE_TABLES_DURABILITY, "");
         this.timelineMetricsPrecisionTableDurability = metricsConf.get(TIMELINE_METRICS_PRECISION_TABLE_DURABILITY, "");
@@ -159,7 +159,7 @@ public class PhoenixHBaseAccessor {
         List<TimelineMetrics> metricsArray = new ArrayList<TimelineMetrics>(insertCache.size());
         while (!insertCache.isEmpty()) {
             metricsArray.add(insertCache.poll());
-        }
+        }/**全部复制出来一份，这时候如果还有正在往里插的呢？*/
         if (metricsArray.size() > 0) {
             commitMetrics(metricsArray);
         }
@@ -179,6 +179,18 @@ public class PhoenixHBaseAccessor {
             conn = getConnection();
             metricRecordStmt = conn.prepareStatement(String.format(
                     UPSERT_METRICS_SQL, METRICS_RECORD_TABLE_NAME));
+
+            /**
+             * "UPSERT INTO %s " +
+             "(METRIC_NAME, HOSTNAME, APP_ID, INSTANCE_ID, SERVER_TIME, START_TIME, " +
+             "UNITS, " +
+             "METRIC_SUM, " +
+             "METRIC_MAX, " +
+             "METRIC_MIN, " +
+             "METRIC_COUNT, " +
+             "METRICS) VALUES " +
+             "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+             * */
             for (TimelineMetrics timelineMetrics : timelineMetricsCollection) {
                 for (TimelineMetric metric : timelineMetrics.getMetrics()) {
                     if (Math.abs(currentTime - metric.getStartTime()) > outOfBandTimeAllowance) {
@@ -187,7 +199,7 @@ public class PhoenixHBaseAccessor {
                                 + currentTime + ", startTime = " + metric.getStartTime()
                                 + ", hostname = " + metric.getHostName());
                         continue;
-                    }
+                    }/**2分钟内的才会执行插入，2分钟前的数据则直接丢弃*/
 
                     metricRecordStmt.clearParameters();
 
@@ -1348,6 +1360,11 @@ public class PhoenixHBaseAccessor {
 
         try {
             stmt = conn.prepareStatement(UPSERT_METADATA_SQL);
+            /**
+             * UPSERT INTO METRICS_METADATA (METRIC_NAME, APP_ID, UNITS, TYPE, " +
+             "START_TIME, SUPPORTS_AGGREGATION) " +
+             "VALUES (?, ?, ?, ?, ?, ?)
+             * */
             int rowCount = 0;
 
             for (TimelineMetricMetadata metadata : metricMetadata) {
@@ -1404,7 +1421,10 @@ public class PhoenixHBaseAccessor {
         try {
             stmt = conn.prepareStatement(GET_HOSTED_APPS_METADATA_SQL);
             rs = stmt.executeQuery();
-
+            /**
+             * SELECT " +
+             "HOSTNAME, APP_IDS FROM HOSTED_APPS_METADATA
+             * */
             while (rs.next()) {
                 hostedAppMap.put(rs.getString("HOSTNAME"),
                         new HashSet<>(Arrays.asList(StringUtils.split(rs.getString("APP_IDS"), ","))));
@@ -1446,6 +1466,11 @@ public class PhoenixHBaseAccessor {
 
         try {
             stmt = conn.prepareStatement(GET_METRIC_METADATA_SQL);
+            /**
+             * SELECT " +
+             "METRIC_NAME, APP_ID, UNITS, TYPE, START_TIME, " +
+             "SUPPORTS_AGGREGATION FROM METRICS_METADATA
+             * */
             rs = stmt.executeQuery();
 
             while (rs.next()) {

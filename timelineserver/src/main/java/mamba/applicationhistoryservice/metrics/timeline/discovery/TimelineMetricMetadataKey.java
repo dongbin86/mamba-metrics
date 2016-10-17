@@ -5,7 +5,9 @@ package mamba.applicationhistoryservice.metrics.timeline.discovery;
 public class TimelineMetricMetadataKey {
     String metricName;
     String appId;
-
+    /**
+     * 用于标记metrics的key,用两个字段
+     * */
     public TimelineMetricMetadataKey(String metricName, String appId) {
         this.metricName = metricName;
         this.appId = appId;

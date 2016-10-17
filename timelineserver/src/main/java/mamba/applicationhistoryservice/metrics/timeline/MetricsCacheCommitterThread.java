@@ -18,6 +18,8 @@ public class MetricsCacheCommitterThread implements Runnable {
         LOG.debug("Checking if metrics cache is empty");
         if (!phoenixHBaseAccessor.isInsertCacheEmpty()) {
             phoenixHBaseAccessor.commitMetricsFromCache();
-        }
+        }/**
+         insertCache只要不为空，那么这个committer线程就执行持久化操作，将数据插入到METRIC_RECORD 表
+         */
     }
 }

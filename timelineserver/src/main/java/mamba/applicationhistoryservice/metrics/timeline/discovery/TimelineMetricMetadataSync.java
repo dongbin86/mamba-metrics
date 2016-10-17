@@ -27,11 +27,16 @@ public class TimelineMetricMetadataSync implements Runnable {
             if (!metadata.isPersisted()) {
                 metadataToPersist.add(metadata);
             }
-        }
+        }/**扫描所有还没有持久化的metricdata*/
         boolean markSuccess = false;
         if (!metadataToPersist.isEmpty()) {
             try {
-                cacheManager.persistMetadata(metadataToPersist);
+                cacheManager.persistMetadata(metadataToPersist);/**写入hbase的METRICS_METADATA表*/
+                /**
+                 * UPSERT INTO METRICS_METADATA (METRIC_NAME, APP_ID, UNITS, TYPE, " +
+                 "START_TIME, SUPPORTS_AGGREGATION) " +
+                 "VALUES (?, ?, ?, ?, ?, ?)
+                 * */
                 markSuccess = true;
             } catch (SQLException e) {
                 LOG.warn("Error persisting metadata.", e);
@@ -49,7 +54,7 @@ public class TimelineMetricMetadataSync implements Runnable {
                 // Update cache
                 cacheManager.getMetadataCache().put(key, metadata);
             }
-        }
+        }/**重新标记已经持久化，不看时间戳吗？*/
         // Sync hosted apps data is needed
         if (cacheManager.syncHostedAppsMetadata()) {
             Map<String, Set<String>> persistedData = null;

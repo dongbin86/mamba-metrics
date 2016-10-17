@@ -79,10 +79,14 @@ public class ApplicationHistoryServer extends CompositeService {
     protected void serviceInit(Configuration conf) throws Exception {
         metricConfiguration = new TimelineMetricConfiguration();
         metricConfiguration.initialize();
+        /**加载hbas-site.xml和ams-site.xml 环境变量中必须要有，否则报错*/
         historyManager = createApplicationHistory();
+        /**historymanager(如果只是作metrics存储，则不需要）*/
         ahsClientService = createApplicationHistoryClientService(historyManager);
+        /**同样可以去掉这个部分*/
         addService(ahsClientService);
         addService((Service) historyManager);
+        /**重点就是下面两个timelineStore和timelineMetricsStore*/
         timelineStore = createTimelineStore(conf);
         timelineMetricStore = createTimelineMetricStore(conf);
         addIfService(timelineStore);
@@ -135,16 +139,19 @@ public class ApplicationHistoryServer extends CompositeService {
         if (conf.getBoolean(DISABLE_APPLICATION_TIMELINE_STORE, true)) {
             LOG.info("Explicitly disabled application timeline store.");
             return new MemoryTimelineStore();
-        }
+        }/**
+         timeline.service.disable.application.timeline.store=true，那么就直接使用内存做timelinestore
+         */
         return ReflectionUtils.newInstance(conf.getClass(
                 YarnConfiguration.TIMELINE_SERVICE_STORE, LeveldbTimelineStore.class,
                 TimelineStore.class), conf);
+        /**默认使用LeveldbTimelineStore*/
     }
 
     protected TimelineMetricStore createTimelineMetricStore(Configuration conf) {
         LOG.info("Creating metrics store.");
         return new HBaseTimelineMetricStore(metricConfiguration);
-    }
+    }/**TimelineMetricStore则是hbase默认实现*/
 
     protected void startWebApp() {
         String bindAddress = metricConfiguration.getWebappAddress();
