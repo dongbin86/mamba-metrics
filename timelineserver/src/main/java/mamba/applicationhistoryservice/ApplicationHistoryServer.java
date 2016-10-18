@@ -79,13 +79,13 @@ public class ApplicationHistoryServer extends CompositeService {
     protected void serviceInit(Configuration conf) throws Exception {
         metricConfiguration = new TimelineMetricConfiguration();
         metricConfiguration.initialize();
-        /**加载hbas-site.xml和ams-site.xml 环境变量中必须要有，否则报错*/
+        /**加载hbas-site.xml和ams-site.xml 环境变量中必须要有，否则报错*//*
         historyManager = createApplicationHistory();
-        /**historymanager(如果只是作metrics存储，则不需要）*/
+        *//**historymanager(如果只是作metrics存储，则不需要）*//*
         ahsClientService = createApplicationHistoryClientService(historyManager);
-        /**同样可以去掉这个部分*/
+        *//**同样可以去掉这个部分*//*
         addService(ahsClientService);
-        addService((Service) historyManager);
+        addService((Service) historyManager);*/
         /**重点就是下面两个timelineStore和timelineMetricsStore*/
         timelineStore = createTimelineStore(conf);
         timelineMetricStore = createTimelineMetricStore(conf);
