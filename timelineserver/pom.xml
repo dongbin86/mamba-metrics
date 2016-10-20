@@ -121,16 +121,6 @@
             <scope>test</scope>
         </dependency>
 
-
-        <dependency>
-            <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-it</artifactId>
-            <version>${hbase.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
-
-
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
