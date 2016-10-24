@@ -15,7 +15,6 @@ import org.apache.hadoop.http.HttpConfig;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hadoop.metrics2.source.JvmMetrics;
 import org.apache.hadoop.service.CompositeService;
-import org.apache.hadoop.service.Service;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ShutdownHookManager;
@@ -31,10 +30,10 @@ import static mamba.applicationhistoryservice.metrics.timeline.TimelineMetricCon
 /**
  * Created by dongbin on 2016/10/10.
  */
-public class ApplicationHistoryServer extends CompositeService {
+public class MambaMetricsServer extends CompositeService {
 
     public static final int SHUTDOWN_HOOK_PRIORITY = 30;
-    private static final Log LOG = LogFactory.getLog(ApplicationHistoryServer.class);
+    private static final Log LOG = LogFactory.getLog(MambaMetricsServer.class);
 
     ApplicationHistoryClientService ahsClientService;
 
@@ -48,31 +47,31 @@ public class ApplicationHistoryServer extends CompositeService {
 
     private TimelineMetricConfiguration metricConfiguration;
 
-    public ApplicationHistoryServer() {
-        super(ApplicationHistoryServer.class.getName());
+    public MambaMetricsServer() {
+        super(MambaMetricsServer.class.getName());
     }
 
-    static ApplicationHistoryServer launchAppHistoryServer(String[] args) {
+    static MambaMetricsServer launchMetricsServer(String[] args) {
         Thread.setDefaultUncaughtExceptionHandler(new YarnUncaughtExceptionHandler());
-        StringUtils.startupShutdownMessage(ApplicationHistoryServer.class, args, LOG);
-        ApplicationHistoryServer appHistoryServer = null;
+        StringUtils.startupShutdownMessage(MambaMetricsServer.class, args, LOG);
+        MambaMetricsServer mambaMetricsServer = null;
         try {
-            appHistoryServer = new ApplicationHistoryServer();
+            mambaMetricsServer = new MambaMetricsServer();
             ShutdownHookManager.get().addShutdownHook(
-                    new CompositeServiceShutdownHook(appHistoryServer),
+                    new CompositeServiceShutdownHook(mambaMetricsServer),
                     SHUTDOWN_HOOK_PRIORITY);
             YarnConfiguration conf = new YarnConfiguration();
-            appHistoryServer.init(conf);
-            appHistoryServer.start();
+            mambaMetricsServer.init(conf);
+            mambaMetricsServer.start();
         } catch (Throwable t) {
-            LOG.fatal("Error starting ApplicationHistoryServer", t);
-            ExitUtil.terminate(-1, "Error starting ApplicationHistoryServer");
+            LOG.fatal("Error starting MambaMetricsServer", t);
+            ExitUtil.terminate(-1, "Error starting MambaMetricsServer");
         }
-        return appHistoryServer;
+        return mambaMetricsServer;
     }
 
     public static void main(String[] args) {
-        launchAppHistoryServer(args);
+        launchMetricsServer(args);
     }
 
     @Override
@@ -96,8 +95,8 @@ public class ApplicationHistoryServer extends CompositeService {
 
     @Override
     protected void serviceStart() throws Exception {
-        DefaultMetricsSystem.initialize("ApplicationHistoryServer");
-        JvmMetrics.initSingleton("ApplicationHistoryServer", null);
+        DefaultMetricsSystem.initialize("MambaMetricsServer");
+        JvmMetrics.initSingleton("MambaMetricsServer", null);
 
         startWebApp();
         super.serviceStart();
@@ -113,7 +112,7 @@ public class ApplicationHistoryServer extends CompositeService {
         super.serviceStop();
     }
 
-    public ApplicationHistoryClientService getClientService() {
+    /*public ApplicationHistoryClientService getClientService() {
         return this.ahsClientService;
     }
 
@@ -134,7 +133,7 @@ public class ApplicationHistoryServer extends CompositeService {
             Configuration conf) {
         return new ApplicationHistoryManagerImpl();
     }
-
+*/
     protected TimelineStore createTimelineStore(Configuration conf) {
         if (conf.getBoolean(DISABLE_APPLICATION_TIMELINE_STORE, true)) {
             LOG.info("Explicitly disabled application timeline store.");
@@ -163,9 +162,14 @@ public class ApplicationHistoryServer extends CompositeService {
             HttpConfig.Policy policy = HttpConfig.Policy.valueOf(
                     conf.get(TimelineMetricConfiguration.TIMELINE_SERVICE_HTTP_POLICY,
                             HttpConfig.Policy.HTTP_ONLY.name()));
-            webApp =
-                    WebApps
-                            .$for("applicationhistory", ApplicationHistoryClientService.class,
+
+            /**
+             * this.name = "applicationhistory";
+             this.api = "ApplicationHistoryClientService";
+             this.application = "ahsClientService";
+             this.wsName = "ws";
+             * */
+            webApp =WebApps.$for("applicationhistory", ApplicationHistoryClientService.class,
                                     ahsClientService, "ws")
                             .withHttpPolicy(conf, policy)
                             .at(bindAddress)

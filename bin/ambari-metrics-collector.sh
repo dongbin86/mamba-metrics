@@ -228,7 +228,7 @@ function start()
     echo "$(date) Launching in distributed mode. Assuming Hbase daemons up and running." | tee -a $STARTUPFILE
   fi
 
-	CLASS='mamba.applicationhistoryservice.ApplicationHistoryServer'
+	CLASS='mamba.applicationhistoryservice.MambaMetricsServer'
 	# YARN_OPTS="${YARN_OPTS} ${YARN_TIMELINESERVER_OPTS}"
 	# if [[ -n "${YARN_TIMELINESERVER_HEAPSIZE}" ]]; then
 	#   JAVA_HEAP_MAX="-Xmx${YARN_TIMELINESERVER_HEAPSIZE}m"
