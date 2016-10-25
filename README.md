@@ -4,17 +4,15 @@
 write metrics to "http://{serverhost}/ws/v1/timeline/metrics"
 
 
-/**
-     *
-     * 说明
-     * 1.phenix的链接方式，DefaultPhoenixDataSource那种就可以，jdbc:phoenix:localhost:2181:/hbase
-     * 2.注意，上面driver的connectUrl的后面zkParentNode是hbase在zk上面的rootPath，如果不一致，phenix是连不上的
-     * 3.hbase的hmaster和regionserver下面都要有phenix的server jar包，然后重启hmaster和regionserver
-     *  phoenix-4.8.1-HBase-1.2-server.jar
-     * 4. timeline server 通过phenix 将数据存储到hbase，在创建表的时候，指定了压缩方式，这种压缩方式基本上是hdfs和hbase都需要的
-     *  HBase中可以对HFile进行gzip、lzo、snappy方式的压缩存储。
-     *
-     * 例如"CREATE TABLE IF NOT " +
+
+     1.phenix的链接方式，DefaultPhoenixDataSource那种就可以，jdbc:phoenix:localhost:2181:/hbase
+     2.注意，上面driver的connectUrl的后面zkParentNode是hbase在zk上面的rootPath，如果不一致，phenix是连不上的
+     3.hbase的hmaster和regionserver下面都要有phenix的server jar包，然后重启hmaster和regionserver
+      phoenix-4.8.1-HBase-1.2-server.jar
+     4. timeline server 通过phenix 将数据存储到hbase，在创建表的时候，指定了压缩方式，这种压缩方式基本上是hdfs和hbase都需要的
+       HBase中可以对HFile进行gzip、lzo、snappy方式的压缩存储。
+
+      例如"CREATE TABLE IF NOT " +
      "EXISTS METRIC_RECORD (METRIC_NAME VARCHAR, " +
      "HOSTNAME VARCHAR, " +
      "SERVER_TIME UNSIGNED_LONG NOT NULL, " +
@@ -30,15 +28,11 @@ write metrics to "http://{serverhost}/ws/v1/timeline/metrics"
      "PRIMARY KEY (METRIC_NAME, HOSTNAME, SERVER_TIME, APP_ID, " +
      "INSTANCE_ID)) DATA_BLOCK_ENCODING='%s', IMMUTABLE_ROWS=true, " +
      "TTL=%s, COMPRESSION='%s'";
-     *      COMPRESSION后面可以跟哪些压缩方式呢？
-     *
-     *      gz， snappy，lzo 大小写都可以。
-     *
-     *      其中 snappy和lzo都需要native lib库的支持。
-     *
-     * 如果你是在standalone模式下调试这个项目，那么你就先选择gz方式好了，这个不需要你额外配置
-     *
-     * <property>
+     COMPRESSION后面可以跟哪些压缩方式呢？
+          gz， snappy，lzo 大小写都可以。
+          其中 snappy和lzo都需要native lib库的支持。
+      如果你是在standalone模式下调试这个项目，那么你就先选择gz方式好了，这个不需要你额外配置
+      <property>
             <name>timeline.metrics.hbase.compression.scheme</name>
             <value>GZ</value>
      </property>
@@ -62,5 +56,4 @@ write metrics to "http://{serverhost}/ws/v1/timeline/metrics"
      查找
      那么什么时候聚合呢，如果你查询的时候，临时聚合，那么性能一定不会好，给用户的体验就很差，数据半天绘制不出来
      因此，这里的设计，就是同时保有细节表，和聚合表，metric都是按照时间存储，其实很容易scan出一段时间内的数据进行聚合
-     *
-     * */
+
